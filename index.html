@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+<script>
+  const express = require('express');
+const mysql = require('mysql');
+const session = require('express-session');
+const md5 = require('md5');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.urlencoded({ extended: true }));
+app.use(session({ secret: 'your-secret-key', resave: true, saveUninitialized: true }));
+
+const dbConfig = {
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'test',
+};
+
+const conn = mysql.createConnection(dbConfig);
+
+conn.connect((err) => {
+  if (err) {
+    console.error('Error connecting to the database');
+    return;
+  }
+  console.log('Connected to the database');
+});
+
+app.post('/sign', (req, res) => {
+  const { name1, email, password1 } = req.body;
+
+  const hashedPassword = md5(password1);
+
+  const checkEmailQuery = `SELECT * FROM details WHERE email = '${email}'`;
+  conn.query(checkEmailQuery, (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Internal Server Error');
+    }
+
+    if (result.length > 0) {
+      return res.redirect('/index.html?info=failed');
+    } else {
+      const insertUserQuery = `INSERT INTO details(name, email, password) VALUES ('${name1}', '${email}', '${hashedPassword}')`;
+      conn.query(insertUserQuery, (err) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).send('Internal Server Error');
+        }
+        return res.redirect('/index.html?info=ss');
+      });
+    }
+  });
+});
+
+app.post('/submit', (req, res) => {
+  const { name, password } = req.body;
+
+  const hashedPassword = md5(password);
+
+  const checkUserQuery = `SELECT * FROM details WHERE email = '${name}' AND password = '${hashedPassword}' LIMIT 1`;
+  conn.query(checkUserQuery, (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Internal Server Error');
+    }
+
+    if (result.length === 1) {
+      const countPhoneQuery = `SELECT COUNT(phone) as phoneCount FROM details WHERE email = '${name}'`;
+      conn.query(countPhoneQuery, (err, phoneResult) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).send('Internal Server Error');
+        }
+
+        if (phoneResult[0].phoneCount === 1) {
+          return res.redirect('/contact.html');
+        } else {
+          return res.redirect('/index.html');
+        }
+      });
+    } else {
+      return res.redirect('/index.html?info=fail');
+    }
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+</script>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script
+      src="https://kit.fontawesome.com/64d58efce2.js"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="styles.css" />
+    <title>Sign in & Sign up page</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="forms-container">
+        <div class="signin-signup">
+          <form action="#" class="sign-in-form">
+            <h2 class="title">Sign in</h2>
+            <div class="input-field">
+              <i class="fas fa-envelope"></i>
+              <input type="text" name="name" placeholder="Email" />
+            </div>
+            <div class="input-field">
+              <i class="fas fa-lock"></i>
+              <input type="password" name="password" placeholder="Password" />
+            </div>
+            <input type="submit" name="submit" value="Login" class="btn solid" />
+            <script> if (req.query.info === 'failed') {
+              return res.render('failed');
+            
+            <div  style="color:red;">
+             invaild username password
+           </div>}
+           </script>
+            <a id="forgot-password" href=""
+              >forgot password?</a
+            >
+            <p class="social-text">Or Sign in with social platforms</p>
+            <div class="social-media">
+              <a href="#" class="social-icon">
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a href="#" class="social-icon">
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a href="#" class="social-icon">
+                <i class="fab fa-google"></i>
+              </a>
+              <a href="#" class="social-icon">
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+            </div>
+          </form>
+          <form action="#" class="sign-up-form">
+            <h2 class="title">Sign up</h2>
+            <div class="input-field">
+              <i class="fas fa-user"></i>
+              <input type="text" name="name1" placeholder="Username" />
+            </div>
+            <div class="input-field">
+              <i class="fas fa-envelope"></i>
+              <input type="text" name="email" placeholder="Email" />
+            </div>
+            <div class="input-field">
+              <i class="fas fa-lock"></i>
+              <input type="password" name="password1" placeholder="Password" />
+            </div>
+            <input type="submit" name="sign" class="btn" value="Sign up" />
+            <script>if (req.query.info === 'failed') {
+              return res.render('failed');
+            
+            
+            <div  style="color:red;">
+             invalid
+           </div>
+          }
+          </script>
+            <p class="social-text">Or Sign up with</p>
+            <div class="social-media">
+              <a href="#" class="social-icon">
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a href="#" class="social-icon">
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a href="#" class="social-icon">
+                <i class="fab fa-google"></i>
+              </a>
+              <a href="#" class="social-icon">
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="panels-container">
+        <div class="panel left-panel">
+          <div class="content">
+            <h3>Haven't created account?</h3>
+            <p>
+              You are missing alot, Go head make one <br />
+              login now   ............!!!!!!!
+            </p>
+            <button class="btn transparent" id="sign-up-btn">Sign up</button>
+          </div>
+          <img src="download.jpeg" class="image" alt="" />
+        </div>
+        <div class="panel right-panel">
+          <div class="content">
+            <h3>Already </h3>
+            <p>set foot in erudition world! , from here</p>
+            <button class="btn transparent" id="sign-in-btn">Sign in</button>
+          </div>
+          <img id="image2" src="OIP (1).jpeg" class="image" alt="" />
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
