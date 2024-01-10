@@ -20,7 +20,7 @@ Setup Instructions:
 
 1. Clone the repository:
 
-   git clone https://github.com/your-username/anime-connector.git
+   git clone https://ankitsingh2633.github.io/xenonstack2/
 
 2. Navigate to the project folder:
 
