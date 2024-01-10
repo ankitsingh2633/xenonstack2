@@ -48,10 +48,5 @@ Additional Notes:
 
 - Customize the theme, add anime-related features, or extend the functionality based on your anime community's needs.
 
-Contributors:
-
-- Your Name (https://github.com/your-username)
-
-Feel free to contribute or raise issues if you find any!
 
 Happy Anime Connecting!
